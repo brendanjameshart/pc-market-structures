@@ -69,13 +69,11 @@ Interactive diagrams built with [Chart.js](https://www.chartjs.org/):
 
 This primer is shared under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Instructors are welcome to adapt it for their own courses with attribution. Speaker notes are included in the HTML source and visible in Reveal.js presenter mode.
 
-The material draws on the Wolfers & Stevenson _Principles of Microeconomics_ treatment of entry, exit, and long-run profitability.
-
 ---
 
 ## About
 
-Brendan Hart is a Professor of Economics at Anne Arundel Community College and the founder of The Power Curve, an economics research and education platform.
+Brendan Hart is an economist and the founder of The Power Curve, an independent research and analysis on strategic competition, political economy, and applied AI.
 
 - [brendanhart.com](https://brendanhart.com)
 - [brendanhart.com/the-power-curve](https://brendanhart.com/the-power-curve)
