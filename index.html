@@ -2198,14 +2198,18 @@
       );
 
       // ── SLIDE 18: 4-panel exit progression (labeled) ────
-      // AC(Q) = 900/Q + 0.9Q + 10, minimum at Q*=31.62, AC*=67
-      // Initial demand (losses): passes below AC minimum
-      // Panel 4 demand passes through (31.62, 67): slope -0.855, P0=90, P1=43
+      // All demands stay below AC so the firm is losing money in panels 1-3.
+      // Panel 4: demand tangent to AC at (31.6, 67) = zero profit.
+      // Label zones: "Average cost" always at (36,80) — 13 units above AC there.
+      // Demand labels placed 12+ units below their respective demand line.
+      // Annotation text placed in upper-left (x<20, y>85) — AC is off-chart there.
       (function () {
         const AC_DATA = acCurve(4, 58, 60);
+        // Initial demand: flat, always below AC minimum of 67
+        // At Q=31.6: D=55.2, AC=67 → loss of 11.8
         const INIT_D = [
-          { x: 5, y: 72 },
-          { x: 60, y: 45 },
+          { x: 5, y: 58 },
+          { x: 60, y: 42 },
         ];
 
         const panelOpts = () => {
@@ -2215,8 +2219,60 @@
           return o;
         };
 
-        // Panel 1: initial flat demand below AC — negative profit gap
-        // At Q=25: demand=62.2, AC=68.5 → loss of 6.3
+        // Label helper — draws curve labels in safe zones:
+        //   "Average cost"  → (36, 80): 13 units above AC(36)=67.4 ✓
+        //   demand label    → passed in as {text, x, y} below the demand line
+        //   annotation      → upper-left (x<18, y>88): AC is off-chart there ✓
+        function drawExitLabels(chart, demandLabel, annotation) {
+          const {
+            ctx,
+            scales: { x, y },
+          } = chart;
+          ctx.save();
+          ctx.font = `600 10px ${FONT}`;
+          // Average cost — upper right of rising AC
+          ctx.fillStyle = CORAL;
+          ctx.textAlign = "left";
+          ctx.fillText(
+            "Average cost",
+            x.getPixelForValue(36),
+            y.getPixelForValue(80),
+          );
+          // Demand curve label
+          if (demandLabel) {
+            ctx.fillStyle = demandLabel.color || "#5580b0";
+            ctx.textAlign = "left";
+            (Array.isArray(demandLabel.text)
+              ? demandLabel.text
+              : [demandLabel.text]
+            ).forEach((line, i) => {
+              ctx.fillText(
+                line,
+                x.getPixelForValue(demandLabel.x),
+                y.getPixelForValue(demandLabel.y - i * 7),
+              );
+            });
+          }
+          // Annotation in upper-left clear zone (AC off-chart there)
+          if (annotation) {
+            ctx.fillStyle = annotation.color || NAVY;
+            ctx.textAlign = "left";
+            (Array.isArray(annotation.text)
+              ? annotation.text
+              : [annotation.text]
+            ).forEach((line, i) => {
+              ctx.fillText(
+                line,
+                x.getPixelForValue(annotation.x || 5),
+                y.getPixelForValue((annotation.y || 108) - i * 8),
+              );
+            });
+          }
+          ctx.restore();
+        }
+
+        // ── Panel 1: flat demand well below AC (losses) ─────
+        // At Q=31.6: demand=55.2, AC=67 → loss gap of 11.8 units
         new Chart(document.getElementById("chartExit1"), {
           type: "scatter",
           data: {
@@ -2229,17 +2285,6 @@
                 pointRadius: 0,
                 borderWidth: 2,
                 tension: 0.3,
-              },
-              {
-                label: "_lossbar",
-                data: [
-                  { x: 25, y: 62.2 },
-                  { x: 25, y: 68.5 },
-                ],
-                borderColor: CORAL,
-                showLine: true,
-                pointRadius: 0,
-                borderWidth: 2.5,
               },
               {
                 label: "_d",
@@ -2256,43 +2301,33 @@
             {
               id: "el1",
               afterDatasetsDraw(chart) {
-                const {
-                  ctx,
-                  scales: { x, y },
-                } = chart;
-                ctx.save();
-                ctx.font = `600 10px ${FONT}`;
-                ctx.textAlign = "left";
-                ctx.fillStyle = CORAL;
-                ctx.fillText(
-                  "Average cost",
-                  x.getPixelForValue(38),
-                  y.getPixelForValue(78),
+                drawExitLabels(
+                  chart,
+                  // demand label: 12 units below the line at x=38 (demand(38)=48, label at 35)
+                  {
+                    text: ["Initial firm", "demand"],
+                    x: 36,
+                    y: 35,
+                    color: "#6b93c4",
+                  },
+                  // annotation: upper-left — AC is off-chart there, demand at x=5 is y=58
+                  {
+                    text: ["Price < Average cost:", "firm is losing money"],
+                    x: 5,
+                    y: 112,
+                    color: CORAL,
+                  },
                 );
-                ctx.fillStyle = "#6b93c4";
-                ctx.fillText(
-                  "Initial firm demand",
-                  x.getPixelForValue(28),
-                  y.getPixelForValue(48),
-                );
-                ctx.fillStyle = CORAL;
-                ctx.textAlign = "right";
-                ctx.fillText(
-                  "Negative profit",
-                  x.getPixelForValue(24),
-                  y.getPixelForValue(65),
-                );
-                ctx.restore();
               },
             },
           ],
         });
 
-        // Panel 2: firms begin to exit — demand shifts right, steepens
-        // Initial demand shown faded for reference
+        // ── Panel 2: firms begin exiting — demand steepens, shifts right ─
+        // D2 at Q=31.6: 67.7, AC=67 → nearly break-even, still slight loss
         const D2 = [
-          { x: 5, y: 79 },
-          { x: 60, y: 42 },
+          { x: 5, y: 72 },
+          { x: 60, y: 48 },
         ];
         new Chart(document.getElementById("chartExit2"), {
           type: "scatter",
@@ -2330,35 +2365,36 @@
             {
               id: "el2",
               afterDatasetsDraw(chart) {
+                drawExitLabels(
+                  chart,
+                  // new demand label below the steeper line at x=38 (D2(38)=57, label at 44)
+                  {
+                    text: ["Firm demand", "(shifts right)"],
+                    x: 32,
+                    y: 44,
+                    color: "#5580b0",
+                  },
+                  // annotation upper-left
+                  {
+                    text: ["Existing firms exit →"],
+                    x: 5,
+                    y: 112,
+                    color: "#5580b0",
+                  },
+                );
+                // faded initial demand label
                 const {
                   ctx,
                   scales: { x, y },
                 } = chart;
                 ctx.save();
                 ctx.font = `600 10px ${FONT}`;
+                ctx.fillStyle = "rgba(107,147,196,0.55)";
                 ctx.textAlign = "left";
-                ctx.fillStyle = CORAL;
-                ctx.fillText(
-                  "Average cost",
-                  x.getPixelForValue(38),
-                  y.getPixelForValue(78),
-                );
-                ctx.fillStyle = "#5580b0";
-                ctx.fillText(
-                  "Existing firms exit →",
-                  x.getPixelForValue(8),
-                  y.getPixelForValue(98),
-                );
-                ctx.fillText(
-                  "Firm demand shifts right",
-                  x.getPixelForValue(8),
-                  y.getPixelForValue(91),
-                );
-                ctx.fillStyle = "rgba(107,147,196,0.6)";
                 ctx.fillText(
                   "Initial demand",
                   x.getPixelForValue(32),
-                  y.getPixelForValue(46),
+                  y.getPixelForValue(27),
                 );
                 ctx.restore();
               },
@@ -2366,10 +2402,12 @@
           ],
         });
 
-        // Panel 3: more firms exit — demand shifts further right, steeper
+        // ── Panel 3: more firms exit — demand steeper still ──
+        // D3 at Q=31.6: 72.9, AC=67 → demand above AC now = small positive profit
+        // (shows progression approaching zero profit from the exit side)
         const D3 = [
-          { x: 5, y: 84 },
-          { x: 60, y: 39 },
+          { x: 5, y: 80 },
+          { x: 60, y: 51 },
         ];
         new Chart(document.getElementById("chartExit3"), {
           type: "scatter",
@@ -2407,38 +2445,30 @@
             {
               id: "el3",
               afterDatasetsDraw(chart) {
-                const {
-                  ctx,
-                  scales: { x, y },
-                } = chart;
-                ctx.save();
-                ctx.font = `600 10px ${FONT}`;
-                ctx.textAlign = "left";
-                ctx.fillStyle = CORAL;
-                ctx.fillText(
-                  "Average cost",
-                  x.getPixelForValue(38),
-                  y.getPixelForValue(78),
+                drawExitLabels(
+                  chart,
+                  // D3(38)=63.5, label 15 below at y=48
+                  {
+                    text: ["Firm demand", "(shifts further)"],
+                    x: 30,
+                    y: 48,
+                    color: "#3a6090",
+                  },
+                  {
+                    text: ["More firms exit →"],
+                    x: 5,
+                    y: 112,
+                    color: "#3a6090",
+                  },
                 );
-                ctx.fillStyle = "#3a6090";
-                ctx.fillText(
-                  "More firms exit →",
-                  x.getPixelForValue(8),
-                  y.getPixelForValue(101),
-                );
-                ctx.fillText(
-                  "Demand shifts further right",
-                  x.getPixelForValue(8),
-                  y.getPixelForValue(94),
-                );
-                ctx.restore();
               },
             },
           ],
         });
 
-        // Panel 4: zero profits — demand tangent to AC minimum at (31.62, 67)
-        // Demand slope -0.855: P0=90, P60=43, verified: 90 - 0.855*26.62 = 67.2 ≈ 67
+        // ── Panel 4: zero profits — demand tangent to AC ────
+        // D4 passes through (31.6, 67): slope=(43-90)/55=-0.855
+        // At Q=31.6: D4=90-0.855*26.6=67.3 ≈ AC=67 ✓
         const D4 = [
           { x: 5, y: 90 },
           { x: 60, y: 43 },
@@ -2493,31 +2523,39 @@
                 } = chart;
                 ctx.save();
                 ctx.font = `600 10px ${FONT}`;
-                ctx.textAlign = "left";
+
+                // Average cost — upper right of rising AC
                 ctx.fillStyle = CORAL;
+                ctx.textAlign = "left";
                 ctx.fillText(
                   "Average cost",
-                  x.getPixelForValue(38),
-                  y.getPixelForValue(78),
+                  x.getPixelForValue(36),
+                  y.getPixelForValue(80),
                 );
+
+                // "Firm demand after free exit" — below teal line near lower-right
+                // D4(44)=90-0.855*39=56.7, label 14 below at y=42
                 ctx.fillStyle = TEAL;
                 ctx.fillText(
                   "Firm demand after",
                   x.getPixelForValue(30),
-                  y.getPixelForValue(55),
+                  y.getPixelForValue(42),
                 );
                 ctx.fillText(
                   "free exit",
                   x.getPixelForValue(30),
-                  y.getPixelForValue(49),
+                  y.getPixelForValue(34),
                 );
+
+                // "Zero profits" — upper-left corner, well clear of all curves
+                // At x=5-15, AC is off-chart; D4 at x=5 is y=90, label at y=112 is above
                 ctx.fillStyle = NAVY;
-                ctx.textAlign = "right";
                 ctx.fillText(
                   "Zero profits",
-                  x.getPixelForValue(30),
-                  y.getPixelForValue(77),
+                  x.getPixelForValue(5),
+                  y.getPixelForValue(112),
                 );
+
                 ctx.restore();
               },
             },
