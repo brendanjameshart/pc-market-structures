@@ -2197,44 +2197,333 @@
         { x: 31.6, y: 67 },
       );
 
-      // ── SLIDE 18: 4-panel exit progression ───────────────
-      // Exit panel 1: flat demand below AC (losses)
-      makeSmallPanel(
-        "chartExit1",
-        [
+      // ── SLIDE 18: 4-panel exit progression (labeled) ────
+      // AC(Q) = 900/Q + 0.9Q + 10, minimum at Q*=31.62, AC*=67
+      // Initial demand (losses): passes below AC minimum
+      // Panel 4 demand passes through (31.62, 67): slope -0.855, P0=90, P1=43
+      (function () {
+        const AC_DATA = acCurve(4, 58, 60);
+        const INIT_D = [
           { x: 5, y: 72 },
           { x: 60, y: 45 },
-        ],
-        "#6b93c4",
-      );
-      // Exit panel 2: slightly right and steeper
-      makeSmallPanel(
-        "chartExit2",
-        [
+        ];
+
+        const panelOpts = () => {
+          const o = makeOpts("Q →", "P ↑", 65, 115);
+          o.plugins.legend.display = false;
+          o.layout.padding = { top: 6, right: 10, bottom: 16, left: 6 };
+          return o;
+        };
+
+        // Panel 1: initial flat demand below AC — negative profit gap
+        // At Q=25: demand=62.2, AC=68.5 → loss of 6.3
+        new Chart(document.getElementById("chartExit1"), {
+          type: "scatter",
+          data: {
+            datasets: [
+              {
+                label: "_ac",
+                data: AC_DATA,
+                borderColor: CORAL,
+                showLine: true,
+                pointRadius: 0,
+                borderWidth: 2,
+                tension: 0.3,
+              },
+              {
+                label: "_lossbar",
+                data: [
+                  { x: 25, y: 62.2 },
+                  { x: 25, y: 68.5 },
+                ],
+                borderColor: CORAL,
+                showLine: true,
+                pointRadius: 0,
+                borderWidth: 2.5,
+              },
+              {
+                label: "_d",
+                data: INIT_D,
+                borderColor: "#6b93c4",
+                showLine: true,
+                pointRadius: 0,
+                borderWidth: 2.5,
+              },
+            ],
+          },
+          options: panelOpts(),
+          plugins: [
+            {
+              id: "el1",
+              afterDatasetsDraw(chart) {
+                const {
+                  ctx,
+                  scales: { x, y },
+                } = chart;
+                ctx.save();
+                ctx.font = `600 10px ${FONT}`;
+                ctx.textAlign = "left";
+                ctx.fillStyle = CORAL;
+                ctx.fillText(
+                  "Average cost",
+                  x.getPixelForValue(38),
+                  y.getPixelForValue(78),
+                );
+                ctx.fillStyle = "#6b93c4";
+                ctx.fillText(
+                  "Initial firm demand",
+                  x.getPixelForValue(28),
+                  y.getPixelForValue(48),
+                );
+                ctx.fillStyle = CORAL;
+                ctx.textAlign = "right";
+                ctx.fillText(
+                  "Negative profit",
+                  x.getPixelForValue(24),
+                  y.getPixelForValue(65),
+                );
+                ctx.restore();
+              },
+            },
+          ],
+        });
+
+        // Panel 2: firms begin to exit — demand shifts right, steepens
+        // Initial demand shown faded for reference
+        const D2 = [
           { x: 5, y: 79 },
           { x: 60, y: 42 },
-        ],
-        "#5580b0",
-      );
-      // Exit panel 3: further right, steeper still
-      makeSmallPanel(
-        "chartExit3",
-        [
+        ];
+        new Chart(document.getElementById("chartExit2"), {
+          type: "scatter",
+          data: {
+            datasets: [
+              {
+                label: "_ac",
+                data: AC_DATA,
+                borderColor: CORAL,
+                showLine: true,
+                pointRadius: 0,
+                borderWidth: 2,
+                tension: 0.3,
+              },
+              {
+                label: "_d0",
+                data: INIT_D,
+                borderColor: "rgba(107,147,196,0.3)",
+                showLine: true,
+                pointRadius: 0,
+                borderWidth: 1.5,
+              },
+              {
+                label: "_d",
+                data: D2,
+                borderColor: "#5580b0",
+                showLine: true,
+                pointRadius: 0,
+                borderWidth: 2.5,
+              },
+            ],
+          },
+          options: panelOpts(),
+          plugins: [
+            {
+              id: "el2",
+              afterDatasetsDraw(chart) {
+                const {
+                  ctx,
+                  scales: { x, y },
+                } = chart;
+                ctx.save();
+                ctx.font = `600 10px ${FONT}`;
+                ctx.textAlign = "left";
+                ctx.fillStyle = CORAL;
+                ctx.fillText(
+                  "Average cost",
+                  x.getPixelForValue(38),
+                  y.getPixelForValue(78),
+                );
+                ctx.fillStyle = "#5580b0";
+                ctx.fillText(
+                  "Existing firms exit →",
+                  x.getPixelForValue(8),
+                  y.getPixelForValue(98),
+                );
+                ctx.fillText(
+                  "Firm demand shifts right",
+                  x.getPixelForValue(8),
+                  y.getPixelForValue(91),
+                );
+                ctx.fillStyle = "rgba(107,147,196,0.6)";
+                ctx.fillText(
+                  "Initial demand",
+                  x.getPixelForValue(32),
+                  y.getPixelForValue(46),
+                );
+                ctx.restore();
+              },
+            },
+          ],
+        });
+
+        // Panel 3: more firms exit — demand shifts further right, steeper
+        const D3 = [
           { x: 5, y: 84 },
           { x: 60, y: 39 },
-        ],
-        "#3a6090",
-      );
-      // Exit panel 4: tangent at AC minimum, zero profit
-      makeSmallPanel(
-        "chartExit4",
-        [
-          { x: 5, y: 80 },
-          { x: 60, y: 36.4 },
-        ],
-        TEAL,
-        { x: 31.6, y: 67 },
-      );
+        ];
+        new Chart(document.getElementById("chartExit3"), {
+          type: "scatter",
+          data: {
+            datasets: [
+              {
+                label: "_ac",
+                data: AC_DATA,
+                borderColor: CORAL,
+                showLine: true,
+                pointRadius: 0,
+                borderWidth: 2,
+                tension: 0.3,
+              },
+              {
+                label: "_d0",
+                data: INIT_D,
+                borderColor: "rgba(107,147,196,0.2)",
+                showLine: true,
+                pointRadius: 0,
+                borderWidth: 1.5,
+              },
+              {
+                label: "_d",
+                data: D3,
+                borderColor: "#3a6090",
+                showLine: true,
+                pointRadius: 0,
+                borderWidth: 2.5,
+              },
+            ],
+          },
+          options: panelOpts(),
+          plugins: [
+            {
+              id: "el3",
+              afterDatasetsDraw(chart) {
+                const {
+                  ctx,
+                  scales: { x, y },
+                } = chart;
+                ctx.save();
+                ctx.font = `600 10px ${FONT}`;
+                ctx.textAlign = "left";
+                ctx.fillStyle = CORAL;
+                ctx.fillText(
+                  "Average cost",
+                  x.getPixelForValue(38),
+                  y.getPixelForValue(78),
+                );
+                ctx.fillStyle = "#3a6090";
+                ctx.fillText(
+                  "More firms exit →",
+                  x.getPixelForValue(8),
+                  y.getPixelForValue(101),
+                );
+                ctx.fillText(
+                  "Demand shifts further right",
+                  x.getPixelForValue(8),
+                  y.getPixelForValue(94),
+                );
+                ctx.restore();
+              },
+            },
+          ],
+        });
+
+        // Panel 4: zero profits — demand tangent to AC minimum at (31.62, 67)
+        // Demand slope -0.855: P0=90, P60=43, verified: 90 - 0.855*26.62 = 67.2 ≈ 67
+        const D4 = [
+          { x: 5, y: 90 },
+          { x: 60, y: 43 },
+        ];
+        new Chart(document.getElementById("chartExit4"), {
+          type: "scatter",
+          data: {
+            datasets: [
+              {
+                label: "_ac",
+                data: AC_DATA,
+                borderColor: CORAL,
+                showLine: true,
+                pointRadius: 0,
+                borderWidth: 2,
+                tension: 0.3,
+              },
+              {
+                label: "_d0",
+                data: INIT_D,
+                borderColor: "rgba(107,147,196,0.12)",
+                showLine: true,
+                pointRadius: 0,
+                borderWidth: 1.5,
+              },
+              {
+                label: "_d",
+                data: D4,
+                borderColor: TEAL,
+                showLine: true,
+                pointRadius: 0,
+                borderWidth: 2.5,
+              },
+              {
+                label: "_dot",
+                data: [{ x: 31.6, y: 67 }],
+                borderColor: NAVY,
+                backgroundColor: NAVY,
+                showLine: false,
+                pointRadius: 5,
+              },
+            ],
+          },
+          options: panelOpts(),
+          plugins: [
+            {
+              id: "el4",
+              afterDatasetsDraw(chart) {
+                const {
+                  ctx,
+                  scales: { x, y },
+                } = chart;
+                ctx.save();
+                ctx.font = `600 10px ${FONT}`;
+                ctx.textAlign = "left";
+                ctx.fillStyle = CORAL;
+                ctx.fillText(
+                  "Average cost",
+                  x.getPixelForValue(38),
+                  y.getPixelForValue(78),
+                );
+                ctx.fillStyle = TEAL;
+                ctx.fillText(
+                  "Firm demand after",
+                  x.getPixelForValue(30),
+                  y.getPixelForValue(55),
+                );
+                ctx.fillText(
+                  "free exit",
+                  x.getPixelForValue(30),
+                  y.getPixelForValue(49),
+                );
+                ctx.fillStyle = NAVY;
+                ctx.textAlign = "right";
+                ctx.fillText(
+                  "Zero profits",
+                  x.getPixelForValue(30),
+                  y.getPixelForValue(77),
+                );
+                ctx.restore();
+              },
+            },
+          ],
+        });
+      })();
 
       // ── SLIDE 20: Three Cases ─────────────────────────────
       makeSmallPanel(
